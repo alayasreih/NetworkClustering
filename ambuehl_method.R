@@ -9,8 +9,7 @@ library(plyr)
 library(pracma)
 library(scales)
 library(svglite)
-library(sf)
-library(osmdata)
+
 
 rm(list = ls())
 options(stringsAsFactors = FALSE)
@@ -21,8 +20,8 @@ JINT=1
 # set the minimum detector number of one cluster
 # cluster number related
 min.nr.det <- 10
-min.clust <- 5
-max.clust <- 20
+min.clust <- 2
+max.clust <- 25
 
 # repeated times
 used.clust <- 50
@@ -36,7 +35,7 @@ detlist <- copy(dets)
 
 
 # load the measurement data
-meas <- read.csv('./data/Zurich/input/detectors_standard_input.csv')
+meas <- read.csv('./data/Zurich/input/detectors_input.csv')
 setDT(meas)
 
 
@@ -52,7 +51,7 @@ coord <- data.frame(dets$lat, dets$long)
 colnames(coord) <- c('lat', 'long')
 
 # set random seeds here
-set.seed(100)
+set.seed(96)
 
 system.time({
   for(i in 1:100){

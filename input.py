@@ -186,10 +186,11 @@ class DataStandardiser(InputData):
         standard_input = standard_input[
             ['detid', 'flow', 'speed', 'occ', 'lat', 'long', 'density', 'interval', 'length', 'pos']]
 
-        standard_input[['detid', 'lat', 'long']].drop_duplicates().to_csv(
+        standard_input[['detid', 'flow', 'speed', 'occ', 'density', 'interval', 'length', 'pos']].to_csv(
             os.path.join(self.dir, files_names[1]), index=False
         )
-        standard_input[['detid', 'flow', 'speed', 'occ', 'density', 'interval', 'length', 'pos']].to_csv(
+
+        standard_input[['detid', 'lat', 'long']].drop_duplicates().to_csv(
             os.path.join(self.dir, files_names[2]), index=False
         )
 
