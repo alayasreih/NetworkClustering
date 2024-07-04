@@ -1,0 +1,9 @@
+
+# Ignore PyCharm project settings
+.idea/
+
+# Ignore compiled Python files
+*.pyc
+
+# Ignore R history files
+.Rhistory
