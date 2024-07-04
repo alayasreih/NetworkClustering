@@ -9,7 +9,7 @@ library(plyr)
 library(pracma)
 library(scales)
 library(svglite)
-
+library(dplyr)
 
 rm(list = ls())
 options(stringsAsFactors = FALSE)
@@ -201,6 +201,8 @@ names(right_coord)[names(right_coord) == 'lat'] <- 'coords.x2'
 right_coord[,N:=.N,by=clust]
 
 meas[right_coord,clust:=clust,on=c(detid="detid")]
+labels <- data.frame(meas$detid, meas$clust)
+labels <- distinct(labels)
 
 # convert clust to factor with ordered levels based on color palette
 measurements_agg <- meas[,.(flow=weighted.mean(flow,length,na.rm=TRUE),
@@ -221,5 +223,5 @@ ggsave('MFD_cluster.svg', dpi = 320, width = 8, height = 6)
 
 # Save the results
 write.csv(meas, 'ambuehl_results.csv', row.names = FALSE)
-
+write.csv(labels, 'ambuehl_labels.csv', row.names = FALSE)
 
