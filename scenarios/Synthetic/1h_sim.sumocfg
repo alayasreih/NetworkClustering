@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<configuration>
+    <input>
+        <net-file value="network.net.xml" />
+        <route-files value="trips.trip.xml" />
+        <additional-files value="output.add.xml,detectors.add.xml" />
+    </input>
+
+    <output>
+        <fcd-output value="output/fcd_output.xml" />
+        <fcd-output.geo value="true" />
+        <fcd-output.attributes value="id,type,speed,x,y,pos,lane" />               
+        <summary-output value="output/summary_output.xml" />
+        <tripinfo-output value="output/tripinfo_output.xml" />
+        <vehroute-output value="output/vehroute_output.xml" />
+        <vehroute-output.exit-times value="true" />
+        <vehroute-output.last-route value="true" />
+        <vehroute-output.sorted value="true" />
+        <vehroute-output.route-length value="true" />
+        <vehroute-output.internal value="true" />
+        <statistic-output value="output/statistic_output.xml" />
+    </output>
+
+    <time>
+        <begin value="0" />
+        <end value="3600" />
+        <step-length value="0.25" />
+    </time>
+
+    <processing>
+        <threads value="8" />
+        <ignore-junction-blocker value="15" />
+        <time-to-teleport value="300" />
+        <max-depart-delay value="100" />
+    </processing>
+
+    <routing>
+        <device.rerouting.probability value="0.20" />
+    </routing>
+
+    <fcd_device>
+        <device.fcd.probability value="0.25" />
+        <device.fcd.period value="1.0" />
+    </fcd_device>
+
+</configuration>

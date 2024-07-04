@@ -1,0 +1,6 @@
+<additional>
+    <laneData id="lane_data" file="output/lane_output.xml" freq="300"/>
+    <edgeData id="edge_data" file="output/edge_output.xml" freq="300"/>
+    <laneData id="lane_data" file="output/lane_output_with_internal.xml" freq="300" withInternal="true"/>
+    <edgeData id="edge_data" file="output/edge_output_with_internal.xml" freq="300" withInternal="true"/>
+</additional>
