@@ -1,0 +1,30 @@
+name: clustering 
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - scipy
+  - scikit-learn
+  - pandas
+  - geopandas
+  - networkx
+  - matplotlib
+  - seaborn
+  - contextily
+  - shapely
+  - scienceplots
+  - jupyter
+  - openpyxl
+  - pyogrio
+  - statsmodels
+  - kneed
+  - cdlib 
+  - python-igraph
+  - alphashape
+
+  # Reminder:
+  # Manually install MATLAB Engine API for Python after environment setup.
+  # To find the MATLAB_ROOT directory enter the command 'matlabroot' in Matlab in the Command Window and press Enter.
+  # Navigate to MATLAB_ROOT\extern\engines\python and run as administrator 'python setup.py install' or 'pip install .
