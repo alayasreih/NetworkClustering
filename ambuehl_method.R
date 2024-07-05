@@ -203,6 +203,7 @@ right_coord[,N:=.N,by=clust]
 meas[right_coord,clust:=clust,on=c(detid="detid")]
 labels <- data.frame(meas$detid, meas$clust)
 labels <- distinct(labels)
+colnames(labels) <- c('detector_id', 'label')
 
 # convert clust to factor with ordered levels based on color palette
 measurements_agg <- meas[,.(flow=weighted.mean(flow,length,na.rm=TRUE),
