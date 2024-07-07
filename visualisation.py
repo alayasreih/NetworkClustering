@@ -2,8 +2,8 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from osgeo import gdal
-import contextily as ctx
+# from osgeo import gdal
+# import contextily as ctx
 import scienceplots
 plt.style.use(['science', 'no-latex'])
 
@@ -27,7 +27,7 @@ def plot_clusters(standard_input, labels, plot_path):
                           },
              cmap=plt.matplotlib.colors.ListedColormap([color_dict[i] for i in sorted(color_dict.keys())])
              )
-    ctx.add_basemap(ax, crs=gdf.crs, source='CartoDB.Positron', attribution_size=1, zoom=16)
+    # ctx.add_basemap(ax, crs=gdf.crs, source='CartoDB.Positron', attribution_size=1, zoom=16)
 
     # format
     ax.set_axis_off()

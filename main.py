@@ -1,4 +1,5 @@
 import os
+import ast
 import pandas as pd
 from input import DataProcessor
 from clustering import ML, Snake
@@ -11,7 +12,10 @@ warnings.filterwarnings('ignore')
 if __name__ == '__main__':
 
     # read the Excel file for params
-    df = pd.read_excel(f'Clustering.xlsx')
+    df = pd.read_excel('Clustering.xlsx').assign(
+        hyper_parameters=lambda df: df['hyper_parameters'].apply(lambda x: tuple(ast.literal_eval(x)))
+    )
+
     params_list = [
         (
             row['id'],
@@ -21,16 +25,15 @@ if __name__ == '__main__':
             row['timestep'],
             row['geo_weight'],
             row['traffic_weight'],
-            row['no_clusters'],
-            row['eps'],
-            row['min_samples']
+            row['hyper_parameters'],
         )
         for index, row in df.iterrows()
     ]
 
     # execute rows sequentially
     for params in params_list:
-        id, scr, feature, agg_interval, timestep, geo_weight, traffic_weight, no_clusters, eps, min_samples = params
+        id, scr, feature, agg_interval, timestep, geo_weight, traffic_weight, hyper_parameters = params
+        n_components_gmm, n_clusters_kmeans, n_clusters_agglomerative, min_samples, eps = hyper_parameters
 
         # load necessary files
         network_graph = load_pickle(r'data\{}\network\network_graph.pkl'.format(scr))
@@ -38,16 +41,14 @@ if __name__ == '__main__':
         vehroute = load_pickle(r'data\{}\output\output_vehroute.pkl'.format(scr))
 
         # define result directory
-        result_dir = r'results\{}\run_{}_{}_{}_{}_{}_{}_{}'.format(
+        result_dir = r'results\{}\run_{}_{}_{}_{}_{}_{}'.format(
                                                              scr,
                                                                    feature,
                                                                    agg_interval,
                                                                    timestep,
                                                                    geo_weight,
                                                                    traffic_weight,
-                                                                   no_clusters,
-                                                                   eps,
-                                                                   min_samples
+                                                                   hyper_parameters
         )
         if not os.path.isdir(result_dir):
             os.makedirs(result_dir)
@@ -72,10 +73,10 @@ if __name__ == '__main__':
         ml_clustering = ML(network_graph, ml_input)
 
         results = {
-            'gmm': ml_clustering.gmm(n_components=no_clusters),
+            'gmm': ml_clustering.gmm(n_components=n_components_gmm),
             'dbscan': ml_clustering.dbscan(eps=eps, min_samples=min_samples),
-            'kmeans': ml_clustering.kmeans(n_clusters=no_clusters),
-            'agglomerative': ml_clustering.agglomerative(n_clusters=no_clusters)
+            'kmeans': ml_clustering.kmeans(n_clusters=n_clusters_kmeans),
+            'agglomerative': ml_clustering.agglomerative(n_clusters=n_clusters_agglomerative)
         }
 
         # evaluate and save results
@@ -83,36 +84,42 @@ if __name__ == '__main__':
             stats = Stats(result, standard_input).get_stats()
             mfd = MFD(result, standard_input).mfd_estimation()
             mfd_eval = MFD.evaluate_mfd(mfd)
-            mfd_resampled = MFD(result, standard_input).mfd_resampling(n_combinations=500, p_sample=60)
-            mfd_resampled_eval = MFD.evaluate_mfd(mfd_resampled)
-            sample_vehroute_error, rmsne_val, mane_val = TravelTime(standard_input, result,
-                                                                    vehroute).vehroute_traveltime(
-                sampling_percentage=25)
+            # mfd_resampled = MFD(result, standard_input).mfd_resampling(n_combinations=500, p_sample=60)
+            # mfd_resampled_eval = MFD.evaluate_mfd(mfd_resampled)
+            # sample_vehroute_error, rmsne_val, mane_val = TravelTime(standard_input, result,
+            #                                                         vehroute).vehroute_traveltime(
+            #     sampling_percentage=25)
 
             plot_clusters(standard_input, result, os.path.join(result_dir, f'{method}_clusters.png'))
             plot_density(stats, os.path.join(result_dir, f'{method}_density_timeseries.png'))
             plot_mfd(mfd, os.path.join(result_dir, f'{method}_mfd.png'))
             plot_mfd_aval(mfd_eval, os.path.join(result_dir, f'{method}_mfd_eval.png'))
-            plot_mfd(mfd_resampled, os.path.join(result_dir, f'{method}_mfd_resampled.png'))
-            plot_mfd_aval(mfd_resampled_eval, os.path.join(result_dir, f'{method}_mfd_resampled_eval.png'))
-            plot_traveltime_eval(sample_vehroute_error, os.path.join(result_dir, f'{method}_traveltime_eval.png'))
+            # plot_mfd(mfd_resampled, os.path.join(result_dir, f'{method}_mfd_resampled.png'))
+            # plot_mfd_aval(mfd_resampled_eval, os.path.join(result_dir, f'{method}_mfd_resampled_eval.png'))
+            # plot_traveltime_eval(sample_vehroute_error, os.path.join(result_dir, f'{method}_traveltime_eval.png'))
 
             save_pickle(result, result_dir, f'{method}_labels.pkl')
             save_pickle(stats, result_dir, f'{method}_stats.pkl')
             save_pickle(mfd, result_dir, f'{method}_mfd.pkl')
-            save_pickle(mfd_resampled, result_dir, f'{method}_mfd_resampled.pkl')
             save_pickle(mfd_eval, result_dir, f'{method}_mfd_eval.pkl')
-            save_pickle(mfd_resampled_eval, result_dir, f'{method}_mfd_resampled_eval.pkl')
-            save_pickle(sample_vehroute_error, result_dir, f'{method}_traveltime_eval.pkl')
+            # save_pickle(mfd_resampled, result_dir, f'{method}_mfd_resampled.pkl')
+            # save_pickle(mfd_resampled_eval, result_dir, f'{method}_mfd_resampled_eval.pkl')
+            # save_pickle(sample_vehroute_error, result_dir, f'{method}_traveltime_eval.pkl')
 
-    # %% snake clustering
+    # # %% snake clustering
+    #
+    # scr = 'Zurich'
+    # agg_interval = 300
+    # feature = 'density'
+    # timestep = 63300
+    # n_clusters = 6
     #
     # # define directory
     # result_dir = r'results\{}\run_snake_{}_{}_{}_{}'.format(scr,
     #                                                           agg_interval,
     #                                                           feature,
     #                                                           timestep,
-    #                                                           no_clusters)
+    #                                                           n_clusters)
     # if not os.path.isdir(result_dir):
     #     os.makedirs(result_dir)
     #
@@ -121,12 +128,13 @@ if __name__ == '__main__':
     # standard_input = load_pickle(r'data\{}\input\standard_input.pkl'.format(scr))
     #
     # # generate input
+    # data_processor = DataProcessor(r'data\{}\input'.format(scr), standard_input)
     # snake_input = data_processor.generate_snake_input(agg_interval=agg_interval, feature=feature)[timestep]
     #
     # # get results
     # snake_clustering = Snake(network_graph, snake_input, dir=result_dir)
-    # snake_result, snake_runtime = snake_clustering.snake(snake_input, no_clusters=no_clusters)
-    # dump_pickle(snake_result, result_dir, f'snake_result_{timestep}_{no_clusters}.pkl')
+    # snake_result, snake_runtime = snake_clustering.snake(n_clusters=n_clusters)
+    # save_pickle(snake_result, result_dir, f'snake_result_{timestep}_{n_clusters}.pkl')
     #
     # # verbose
     # print('Snake runtime: ', snake_runtime)
