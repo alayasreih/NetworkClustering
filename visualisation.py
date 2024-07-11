@@ -1,16 +1,20 @@
-import geopandas as gpd
 import numpy as np
 import pandas as pd
+import geopandas as gpd
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 # from osgeo import gdal
 # import contextily as ctx
 import scienceplots
+
 plt.style.use(['science', 'no-latex'])
 
-# Define a color dictionary
-colors = ['#57d3db', '#db579e', '#69db57', '#db5f57', '#7957db', '#dbae57',
-          '#b9db57', '#5784db', '#c957db', '#57db94', '#db57a3', '#57db6f']
-color_dict = {i: color for i, color in enumerate(colors)}
+colors_base = ["#F8766D", "#CD9600", "#7CAE00", "#00BE67", "#00BFC4", "#00A9FF", "#C77CFF", "#FF61CC"]
+colors_extended = colors_base + ["#FF8C42", "#B79F00", "#5C9EAD", "#FF4B00", "#7F00FF", "#FF6D6A", "#00BFFF",
+                                 "#FF007F", "#8E44AD", "#3498DB", "#2ECC71", "#E74C3C", "#F1C40F", "#1ABC9C",
+                                 "#9B59B6", "#2980B9", "#27AE60", "#E67E22", "#BDC3C7", "#34495E", "#16A085"]
+
+color_dict = {i: color for i, color in enumerate(colors_extended)}
 
 
 def plot_clusters(standard_input, labels, plot_path):
@@ -21,13 +25,15 @@ def plot_clusters(standard_input, labels, plot_path):
 
     # plot
     fig, ax = plt.subplots(figsize=(2.5, 2.5))
-    gdf.plot(ax=ax, column='label', categorical=True, linewidth=0.1, legend=True,
-             legend_kwds={'loc': 'upper right', 'title': 'Cluster', 'frameon': False, 'title_fontsize': 3,
-                          'fontsize': 3, 'markerscale': 0.2, 'scatteryoffsets': [0.3]
-                          },
-             cmap=plt.matplotlib.colors.ListedColormap([color_dict[i] for i in sorted(color_dict.keys())])
-             )
-    # ctx.add_basemap(ax, crs=gdf.crs, source='CartoDB.Positron', attribution_size=1, zoom=16)
+    gdf['color'] = gdf['label'].apply(lambda x: color_dict[x])
+    gdf.plot(ax=ax, color=gdf['color'], linewidth=0.1)
+
+    # create a custom legend
+    legend_elements = [Line2D([0], [0], marker='o', linestyle='none', color=color_dict[i],
+                              markerfacecolor=color_dict[i], markersize=4, label=f'{i}')
+                       for i in sorted(gdf['label'].unique())]
+    ax.legend(handles=legend_elements, loc='upper right', title='Cluster', frameon=False, title_fontsize=3,
+              fontsize=3, markerscale=0.2, labelspacing=0.4, handletextpad=0.4)
 
     # format
     ax.set_axis_off()
@@ -42,17 +48,22 @@ def plot_clusters(standard_input, labels, plot_path):
 
 
 def plot_mfd(mfd, plot_path):
-    fig, axs = plt.subplots(2, 6, figsize=(8, 2))
+    fig, axs = plt.subplots(5, 5, figsize=(5, 5))
     axs = axs.flatten()
 
     for (label, temp), ax in zip(mfd.groupby('label'), axs):
-        ax.scatter(temp['density'], temp['flow'], s=1, color=color_dict[label])
+        ax.scatter(temp['density'], temp['flow'], s=0.5, color=color_dict[label], edgecolors='none')
         ax.set_xlabel('Density [veh/km-ln]', fontsize=2, labelpad=1)
         ax.set_ylabel('Flow [veh/hr-ln]', fontsize=2, labelpad=1)
         ax.set_xlim(0)
         ax.set_ylim(0)
         ax.tick_params(axis='both', which='both', labelsize=2, pad=1, top=False, right=False)
         ax.minorticks_off()
+        ax.spines['left'].set_linewidth(0.2)
+        ax.spines['bottom'].set_linewidth(0.2)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.tick_params(axis='both', width=0.2, length=1)
 
     for ax in axs[len(mfd['label'].unique()):]:
         ax.axis('off')
@@ -67,8 +78,8 @@ def plot_density(stats, plot_path):
     fig, ax = plt.subplots(figsize=(8, 4))
 
     for label, temp in stats.groupby('label'):
-        ax.plot(temp['timestep'], temp['density_mean'], linewidth=1, color=color_dict[label])
-        ax.plot(temp['timestep'], temp['density_std'], linestyle='--', linewidth=1, color=color_dict[label])
+        ax.plot(temp['timestep'], temp['density_mean'], linewidth=0.6, color=color_dict[label])
+        ax.plot(temp['timestep'], temp['density_std'], linestyle='--', linewidth=0.6, color=color_dict[label])
 
     ax.set_xlabel('Time [s]', fontsize=6, labelpad=4)
     ax.set_ylabel('Density [veh/km-ln]', fontsize=6, labelpad=4)
@@ -95,7 +106,8 @@ def plot_mfd_aval(eval_results, plot_path):
         alpha_shape = temp.iloc[0]['alpha_shape']
 
         # Plot the points
-        ax.scatter(points_normalized[:, 0], points_normalized[:, 1], s=1, label=f'Points {label}', color=color_dict[label], alpha=0.6)
+        ax.scatter(points_normalized[:, 0], points_normalized[:, 1], s=1, label=f'Points {label}',
+                   color=color_dict[label], alpha=0.6)
 
         # Plot the alpha shape
         if not alpha_shape.is_empty:
@@ -122,7 +134,6 @@ def plot_mfd_aval(eval_results, plot_path):
 
 
 def plot_traveltime_eval(eval_results, plot_path):
-
     eval_results = eval_results.loc[
         (eval_results.percentage_error > eval_results.percentage_error.quantile(0.01)) &
         (eval_results.percentage_error < eval_results.percentage_error.quantile(0.99))
