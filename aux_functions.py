@@ -12,4 +12,3 @@ def save_pickle(obj, dir, file_name):
     file_path = os.path.join(dir, file_name)
     with open(file_path, 'wb') as file:
         pickle.dump(obj, file)
-    return
