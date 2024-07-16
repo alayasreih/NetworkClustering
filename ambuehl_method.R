@@ -188,7 +188,7 @@ colors <- c('#57d3db', '#5784db', '#7957db', '#c957db', '#db579e', '#cb6843',
 right_coord <- coord_clust[,c(1,2,3,rightclust+3),with=F]
 cluster.nr <- length(unique(right_coord$clust))
 ggplot(data=right_coord) +
-  geom_point(aes(long, lat, colour = as.factor(clust))) +
+  geom_point(aes(lat, long, colour = as.factor(clust))) +
   scale_color_manual(values = colors)
 
 ggsave('detectors_cluster.svg', dpi = 320, width = 8, height = 6)
